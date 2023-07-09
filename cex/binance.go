@@ -2,10 +2,11 @@ package cex
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"errors"
+	"strconv"
 
 	binance_connector "github.com/binance/binance-connector-go"
+	"github.com/yanglanping2022/exchange/config"
 )
 
 type BinanceCex struct {
@@ -13,68 +14,100 @@ type BinanceCex struct {
 	client *binance_connector.Client
 }
 
+var binanceSymbolMap map[int]string = map[int]string{
+	BTCUSDT: "BTCUSDT",
+	ETHUSDT: "ETHUSDT",
+}
+
+func (r *BinanceCex) Name() string {
+	return r.name
+}
+
 func (r *BinanceCex) NewClient() error {
 	r.name = "Binance"
 
 	r.client = binance_connector.NewClient(
-		"xxx",
-		"yyy",
-		"https://testnet.binance.vision")
+		config.Conf.Binance.APIKey,
+		config.Conf.Binance.SecretKey,
+		config.Conf.Binance.BaseURL)
+
 	return nil
 }
 
-func (r *BinanceCex) Name() error {
-	fmt.Println(r.name)
-	return nil
-}
+func (r *BinanceCex) Balances() ([]BalanceInfo, error) {
+	balances := []BalanceInfo{}
 
-func (r *BinanceCex) Account() error {
 	resp, err := r.client.NewGetAccountService().
 		Do(context.Background())
 	if err != nil {
-		log.Println(err)
-		return err
+		return balances, err
 	}
 
-	fmt.Println(binance_connector.PrettyPrint(resp))
-	return nil
-}
-
-func (r *BinanceCex) Balances() error {
-	resp, err := r.client.NewGetAccountService().
-		Do(context.Background())
-	if err != nil {
-		log.Println(err)
-		return err
+	for i := 0; i < len(resp.Balances); i++ {
+		balance := resp.Balances[i]
+		if balance.Asset == "USDT" || balance.Asset == "BNB" {
+			balances = append(balances, BalanceInfo{Symbol: balance.Asset, Free: balance.Free})
+		}
 	}
 
-	fmt.Println(binance_connector.PrettyPrint(resp.Balances))
-	return nil
+	return balances, nil
 }
 
-func (r *BinanceCex) BookTicker() error {
+func (r *BinanceCex) BestOrder(symbol int) (*BookOrderInfo, error) {
+	symbolStr, exist := binanceSymbolMap[symbol]
+	if !exist {
+		return nil, errors.New("unknown symbol")
+	}
+
 	resp, err := r.client.NewTickerBookTickerService().
-		Symbols([]string{"ETHUSDT"}).
-		// Symbol("ETHUSDT").
+		Symbol(symbolStr).
 		Do(context.Background())
 	if err != nil {
-		log.Println(err)
-		return err
+		return nil, err
 	}
 
-	fmt.Println(binance_connector.PrettyPrint(resp))
-	return nil
+	bookOrderInfo := BookOrderInfo{}
+
+	bookOrderInfo.Name = r.name
+
+	if bidPrice, err := strconv.ParseFloat(resp[0].BidPrice, 32); err != nil {
+		return nil, err
+	} else {
+		bookOrderInfo.BidPrice = float32(bidPrice)
+	}
+
+	if bidQty, err := strconv.ParseFloat(resp[0].BidQty, 32); err != nil {
+		return nil, err
+	} else {
+		bookOrderInfo.BidQty = float32(bidQty)
+	}
+
+	if askPrice, err := strconv.ParseFloat(resp[0].AskPrice, 32); err != nil {
+		return nil, err
+	} else {
+		bookOrderInfo.AskPrice = float32(askPrice)
+	}
+
+	if askQty, err := strconv.ParseFloat(resp[0].AskQty, 32); err != nil {
+		return nil, err
+	} else {
+		bookOrderInfo.AskQty = float32(askQty)
+	}
+
+	return &bookOrderInfo, nil
 }
 
-func (r *BinanceCex) AllOrders() error {
-	resp, err := r.client.NewGetAllOrdersService().
-		Symbol("ETHUSDT").
-		Do(context.Background())
-	if err != nil {
-		log.Println(err)
-		return err
-	}
+func (r *BinanceCex) TradeFee(symbol int) (*TradeFeeInfo, error) {
+	// resp, err := r.client.NewTradeFeeService().
+	// 	Symbol("ETHUSDT").
+	// 	Do(context.Background())
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return err
+	// }
 
-	fmt.Println(binance_connector.PrettyPrint(resp))
-	return nil
+	feeInfo := TradeFeeInfo{}
+	feeInfo.MakerCommission = 0.001
+	feeInfo.TakerCommission = 0.001
+	return &feeInfo, nil
 }

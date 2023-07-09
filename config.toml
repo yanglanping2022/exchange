@@ -1,0 +1,8 @@
+[binance]
+apikey = "xxx"
+secretkey = "xxx"
+baseurl = "https://api.binance.com"
+
+[gateio]
+apikey = "yyy"
+secretkey = "yyy"

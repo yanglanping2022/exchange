@@ -2,11 +2,15 @@ module github.com/yanglanping2022/exchange
 
 go 1.20
 
+require github.com/BurntSushi/toml v1.3.2
+
 require (
-	github.com/binance/binance-connector-go v0.4.0 // indirect
-	github.com/bitly/go-simplejson v0.5.0 // indirect
+	github.com/antihax/optional v1.0.0 // indirect
+	github.com/binance/binance-connector-go v0.5.0 // indirect
+	github.com/bitly/go-simplejson v0.5.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gateio/gateapi-go/v6 v6.45.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

@@ -1,8 +1,7 @@
-package order
+package cmd
 
 import (
 	"github.com/urfave/cli/v2"
-	"github.com/yanglanping2022/exchange/cex"
 )
 
 var OrderCommand = &cli.Command{
@@ -18,9 +17,5 @@ var OrderCommand = &cli.Command{
 }
 
 func listOrders(ctx *cli.Context) error {
-	for _, cex := range cex.CexPool {
-		cex.Name()
-		cex.AllOrders()
-	}
 	return nil
 }
