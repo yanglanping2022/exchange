@@ -7,29 +7,29 @@ import (
 	"github.com/yanglanping2022/exchange/cex"
 )
 
-var MarketCommand = &cli.Command{
-	Name:  "market",
-	Usage: "market info",
+var SpotCommand = &cli.Command{
+	Name:  "spot",
+	Usage: "symbols list",
 	Subcommands: []*cli.Command{
 		{
-			Name:   "bestorder",
-			Usage:  "show bookticker",
-			Action: bestOrder,
+			Name:   "symbols",
+			Usage:  "symbols list",
+			Action: listSymbols,
 		},
 	},
 }
 
-func bestOrder(ctx *cli.Context) error {
+func listSymbols(ctx *cli.Context) error {
 	for _, ex := range cex.CexPool {
 		log.Println(ex.Name())
 
-		orderInfo, err := ex.BestOrder(cex.ETHUSDT)
+		symbols, err := ex.CurrencyPairs()
 		if err != nil {
 			log.Println(err)
 			return err
 		}
 
-		log.Println(orderInfo)
+		log.Println(symbols)
 	}
 	return nil
 }

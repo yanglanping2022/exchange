@@ -20,6 +20,7 @@ type GateioCex struct {
 var gateioSymbolMap map[int]string = map[int]string{
 	BTCUSDT: "BTC_USDT",
 	ETHUSDT: "ETH_USDT",
+	FILUSDT: "FIL_USDT",
 }
 
 func (r *GateioCex) Name() string {
@@ -112,4 +113,20 @@ func (r *GateioCex) TradeFee(symbol int) (*TradeFeeInfo, error) {
 	feeInfo.MakerCommission = 0.002
 	feeInfo.TakerCommission = 0.002
 	return &feeInfo, nil
+}
+
+func (r *GateioCex) CurrencyPairs() ([]string, error) {
+	var symbols []string
+
+	resp, _, err := r.client.SpotApi.ListCurrencyPairs(r.context)
+	if err != nil {
+		log.Println(err)
+		return symbols, err
+	}
+
+	for i := 0; i < len(resp); i++ {
+		symbols = append(symbols, resp[i].Id)
+	}
+
+	return symbols, nil
 }

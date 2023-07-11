@@ -22,8 +22,8 @@ type Config struct {
 
 var Conf Config
 
-func InitConf() {
-	if _, err := toml.DecodeFile("./config.toml", &Conf); err != nil {
+func InitConf(filepath string) {
+	if _, err := toml.DecodeFile(filepath, &Conf); err != nil {
 		panic(err)
 	}
 }

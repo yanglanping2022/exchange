@@ -16,21 +16,30 @@ var app = &cli.App{
 	Name:  "exchange",
 	Usage: "exchange command tools",
 	Flags: []cli.Flag{
-		utils.EchoFlag,
+		utils.ConfigFlag,
 	},
-	Action: task,
 }
 
 func init() {
-	// init config
-	config.InitConf()
-	// init cex
-	cex.InitCex()
-	// init command
+	app.Action = task
 	app.Commands = []*cli.Command{
 		cmd.AccountCommand,
 		cmd.MarketCommand,
 		cmd.OrderCommand,
+		cmd.SpotCommand,
+	}
+
+	app.Before = func(ctx *cli.Context) error {
+		file := ctx.String("config")
+		// init config
+		config.InitConf(file)
+		// init cex
+		cex.InitCex()
+		return nil
+	}
+
+	app.After = func(ctx *cli.Context) error {
+		return nil
 	}
 }
 
@@ -42,9 +51,11 @@ func main() {
 }
 
 func task(ctx *cli.Context) error {
+	log.Println("task start ......")
 	for {
 		chance(cex.CexPool[0], cex.CexPool[1], cex.BTCUSDT)
 		chance(cex.CexPool[0], cex.CexPool[1], cex.ETHUSDT)
+		chance(cex.CexPool[0], cex.CexPool[1], cex.FILUSDT)
 	}
 }
 
@@ -60,12 +71,12 @@ func chance(exchangeA cex.CEX, exchangeB cex.CEX, symbol int) {
 	)
 
 	if tradeFeeA, err = exchangeA.TradeFee(symbol); err != nil {
-		log.Println("exchange a get trade fee failed")
+		log.Println("get exchangeA trade fee failed")
 		return
 	}
 
 	if tradeFeeB, err = exchangeB.TradeFee(symbol); err != nil {
-		log.Println("exchange b get trade fee failed")
+		log.Println("get exchangeB trade fee failed")
 		return
 	}
 
@@ -79,7 +90,7 @@ func chance(exchangeA cex.CEX, exchangeB cex.CEX, symbol int) {
 		return
 	}
 
-	log.Println(symbol, bestOrderA, bestOrderB)
+	// log.Println(symbol, bestOrderA, bestOrderB)
 
 	//
 	// chance:

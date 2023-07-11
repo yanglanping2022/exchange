@@ -3,6 +3,7 @@ package cex
 const (
 	BTCUSDT = iota
 	ETHUSDT
+	FILUSDT
 )
 
 type BookOrderInfo struct {
@@ -29,6 +30,7 @@ type CEX interface {
 	Balances() ([]BalanceInfo, error)
 	BestOrder(symbol int) (*BookOrderInfo, error)
 	TradeFee(symbol int) (*TradeFeeInfo, error)
+	CurrencyPairs() ([]string, error)
 }
 
 var CexPool []CEX

@@ -3,6 +3,7 @@ package cex
 import (
 	"context"
 	"errors"
+	"log"
 	"strconv"
 
 	binance_connector "github.com/binance/binance-connector-go"
@@ -17,6 +18,7 @@ type BinanceCex struct {
 var binanceSymbolMap map[int]string = map[int]string{
 	BTCUSDT: "BTCUSDT",
 	ETHUSDT: "ETHUSDT",
+	FILUSDT: "FILUSDT",
 }
 
 func (r *BinanceCex) Name() string {
@@ -110,4 +112,21 @@ func (r *BinanceCex) TradeFee(symbol int) (*TradeFeeInfo, error) {
 	feeInfo.MakerCommission = 0.001
 	feeInfo.TakerCommission = 0.001
 	return &feeInfo, nil
+}
+
+func (r *BinanceCex) CurrencyPairs() ([]string, error) {
+	var symbols []string
+
+	resp, err := r.client.NewExchangeInfoService().
+		Do(context.Background())
+	if err != nil {
+		log.Println(err)
+		return symbols, err
+	}
+
+	for i := 0; i < len(resp.Symbols); i++ {
+		symbols = append(symbols, resp.Symbols[i].Symbol)
+	}
+
+	return symbols, nil
 }
